@@ -1,0 +1,719 @@
+package com.poker.domain;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Check {
+	ArrayList<Player> players;
+
+	ArrayList<List<Card>> allCards = new ArrayList<List<Card>>();
+
+	public Check(ArrayList<Player> players) {
+		this.players = players;
+		for (int i = 0; i < players.size(); i++) {
+			allCards.add(players.get(i).getCards());
+		}
+	}
+
+	public static void main(String[] args) {
+		// 创建玩家1
+		Player player1 = new Player();
+		player1.setId(1);
+		player1.setName("玩家1");
+		List<Card> cards1 = new ArrayList<Card>();
+		cards1.add(new Card(403, HuaSe.红桃, "4", "hong04.jpg"));
+		cards1.add(new Card(304, HuaSe.黑桃, "3", "hei04.jpg"));
+		cards1.add(new Card(503, HuaSe.红桃, "5", "hong05.jpg"));
+		cards1.add(new Card(602, HuaSe.黑桃, "6", "hong09.jpg"));
+		cards1.add(new Card(903, HuaSe.红桃, "9", "hong_q.jpg"));
+		player1.setCards(cards1);
+
+		// 玩家2
+		Player player2 = new Player();
+		player2.setId(2);
+		player2.setName("玩家2");
+		List<Card> cards2 = new ArrayList<Card>();
+		cards2.add(new Card(401, HuaSe.梅花, "3", "mei06.jpg"));
+		cards2.add(new Card(402, HuaSe.红桃, "4", "hong06.jpg"));
+		cards2.add(new Card(502, HuaSe.黑桃, "5", "hei07.jpg"));
+		cards2.add(new Card(902, HuaSe.红桃, "9", "hong10.jpg"));
+		cards2.add(new Card(202, HuaSe.梅花, "2", "mei01.jpg"));
+		player2.setCards(cards2);
+
+		// 玩家3
+		Player player3 = new Player();
+		player3.setId(3);
+		player3.setName("玩家3");
+		List<Card> cards3 = new ArrayList<Card>();
+		cards3.add(new Card(201, HuaSe.黑桃, "2", "fang04.jpg"));
+		cards3.add(new Card(903, HuaSe.黑桃, "9", "mei04.jpg"));
+		cards3.add(new Card(504, HuaSe.梅花, "5", "fang_j.jpg"));
+		cards3.add(new Card(404, HuaSe.黑桃, "4", "mei_j.jpg"));
+		cards3.add(new Card(602, HuaSe.梅花, "6", "hei09.jpg"));
+		player3.setCards(cards3);
+
+		// 玩家4
+		Player player4 = new Player();
+		player4.setId(4);
+		player4.setName("玩家4");
+		List<Card> cards4 = new ArrayList<Card>();
+		cards4.add(new Card(801, HuaSe.黑桃, "8", "hei05.jpg"));
+		cards4.add(new Card(901, HuaSe.方块, "9", "hei06.jpg"));
+		cards4.add(new Card(1101, HuaSe.黑桃, "J", "hong07.jpg"));
+		cards4.add(new Card(301, HuaSe.方块, "3", "mei08.jpg"));
+		cards4.add(new Card(401, HuaSe.方块, "4", "fang09.jpg"));
+		player4.setCards(cards4);
+
+		ArrayList<Player> players = new ArrayList<Player>();
+		players.add(player1);
+		players.add(player2);
+		players.add(player3);
+		players.add(player4);
+
+		Check cheacks = new Check(players);
+		// System.out.println(cheacks.isShunZi(cheacks.players.get(2).getCards()));;
+		System.out.println(cheacks.getWiner());
+
+	}
+
+	/***
+	 * 获取胜利玩家编号
+	 */
+
+	public int getWiner() {
+		System.gc();
+		// 对牌进行排序
+		sort();
+
+		// 比较同花大顺
+		int playerIndex = TongHuaDaShunWinner();
+		if (playerIndex != -1) {
+			System.out.println("同花大顺");
+			return playerIndex;
+		}
+		// 比较同花顺
+		playerIndex = TongHuaShunWinner();
+		if (playerIndex != -1) {
+			System.out.println("同花顺");
+			return playerIndex;
+		}
+		// 比较4条大小 SiTiaoWinner()
+		playerIndex = SiTiaoWinner();
+		if (playerIndex != -1) {
+			System.out.println("四条");
+			return playerIndex;
+		}
+		// 比较满堂红大小 manTangHongWinner()
+		playerIndex = manTangHongWinner();
+		if (playerIndex != -1) {
+			System.out.println("满堂红");
+			return playerIndex;
+		}
+
+		// 同花胜利者 tongHuaWinner()
+
+		playerIndex = tongHuaWinner();
+		if (playerIndex != -1) {
+			System.out.println("同花");
+			return playerIndex;
+		}
+
+		// 比较是否顺子赢家 isShunZiWinner()
+		playerIndex = isShunZiWinner();
+		if (playerIndex != -1) {
+			System.out.println("顺子");
+			return playerIndex;
+		}
+		// 比较三条大小 isSanTiaoWinner
+		playerIndex = isSanTiaoWinner();
+		if (playerIndex != -1) {
+			System.out.println("三条");
+			return playerIndex;
+		}
+		// 判断两对赢家 isLiangDuiWinner
+
+		playerIndex = isLiangDuiWinner();
+		if (playerIndex != -1) {
+			System.out.println("两对");
+			return playerIndex;
+		}
+
+		// 判断单对赢家 isYiDuiWinner
+		playerIndex = isYiDuiWinner();
+		if (playerIndex != -1) {
+			System.out.println("单对");
+			return playerIndex;
+		}
+		// 判断单张赢家 danZhangWinner
+		playerIndex = danZhangWinner();
+		if (playerIndex != -1) {
+			System.out.println("单张");
+			return playerIndex;
+		}
+		return 0;
+	}
+
+	/**
+	 * 比较同花大顺胜利者 return -1 代表无获胜者
+	 * 
+	 * @author ZHJI
+	 * 
+	 */
+	private int TongHuaDaShunWinner() {
+		tempCards tempCards = new tempCards();
+		for (int i = 0; i < allCards.size(); i++) {
+			if (isTongHua(allCards.get(i)) && isShunZi(allCards.get(i)) && "A".equals(allCards.get(i).get(allCards.get(i).size() - 1).getName())) {
+				tempCards.allCards.add(allCards.get(i));
+				tempCards.playersIndex.add(i);
+			}
+		}
+		if (tempCards.allCards.size() == 0) {
+			return -1;
+		} else if (tempCards.allCards.size() == 1) {
+			return tempCards.playersIndex.get(0);
+		} else {
+			// 这里就是有多个同花大顺的情况，去花色最大者获胜
+			int playersIndex = 0;
+			int maxValu = 0;
+			for (int i = 0; i < tempCards.allCards.size(); i++) {
+				if (tempCards.allCards.get(i).get(0).getValue() > maxValu) {
+					maxValu = tempCards.allCards.get(i).get(0).getValue();
+					playersIndex = tempCards.playersIndex.get(i);
+				}
+			}
+			return playersIndex;
+		}
+
+	}
+
+	/**
+	 * 比较同花顺胜利者 return -1 代表无获胜者
+	 * 
+	 * @author ZHJI
+	 * 
+	 */
+	private int TongHuaShunWinner() {
+		tempCards tempCards = new tempCards();
+		for (int i = 0; i < allCards.size(); i++) {
+			if (isTongHua(allCards.get(i)) && isShunZi(allCards.get(i))) {
+				tempCards.allCards.add(allCards.get(i));
+				tempCards.playersIndex.add(i);
+			}
+		}
+
+		if (tempCards.allCards.size() == 0) {
+			return -1;
+		} else if (tempCards.allCards.size() == 1) {
+			return tempCards.playersIndex.get(0);
+		} else {
+			// 这里就是有多个同花顺的情况,取最大值最大的为胜
+			int playersIndex = 0;
+			int maxValu = 0;
+			int flag = 0;// 当有两个或两个以上同花顺且牌型一样的时候设置为0，进入下一轮判断
+			for (int i = 0; i < tempCards.allCards.size(); i++) {
+				if (tempCards.allCards.get(i).get(0).getValue() > maxValu) {
+					maxValu = tempCards.allCards.get(i).get(0).getValue();
+					playersIndex = tempCards.playersIndex.get(i);
+				}
+			}
+			return playersIndex;
+		}
+
+	}
+
+	class tempCards {
+		ArrayList<List<Card>> allCards = new ArrayList<List<Card>>();
+		ArrayList<Integer> playersIndex = new ArrayList<Integer>();
+	}
+
+	/**
+	 * 对玩家手上的牌进行排序
+	 * 
+	 * @author ZHJI
+	 * 
+	 * @return
+	 */
+	private void sort() {
+		for (int i = 0; i < allCards.size(); i++) {
+			Collections.sort(allCards.get(i));
+		}
+	}
+
+	/**
+	 * 判断是否同花
+	 * 
+	 * @author ZHJI
+	 * 
+	 * @return
+	 */
+	private boolean isTongHua(List<Card> cards) {
+		if (cards.size() <= 1) {
+			return true;
+		}
+		HuaSe husSe = cards.get(0).getHuaSe();
+		for (int i = 1; i < cards.size(); i++) {
+			if (cards.get(i).getHuaSe() != husSe) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * 判断是否顺子
+	 * 
+	 * @author ZHJI
+	 * 
+	 * @return
+	 */
+	private boolean isShunZi(List<Card> cards) {
+		if (cards.size() <= 1) {
+			return true;
+		}
+		if (isA2345(cards)) {
+			return true;
+		}
+		int value = changeCardName(cards.get(0).getName());
+		for (int i = 1; i < cards.size(); i++) {
+			if (changeCardName(cards.get(i).getName()) != (++value)) {
+				return false;
+			}
+		}
+		return true;
+
+	}
+
+	public boolean isA2345(List<Card> cards) {
+		if (changeCardName(cards.get(cards.size() - 1).getName()) != 14) {
+			return false;
+		} else {
+			int value = 1;
+			for (int i = 0; i < cards.size() - 1; i++) {
+				if (changeCardName(cards.get(i).getName()) != (++value)) {
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+
+	/**
+	 * 将牌值转换为数字 J=>11 Q=>12 K=>13 A=>14
+	 */
+	public int changeCardName(String name) {
+
+		switch (name) {
+		case "2":
+			return 2;
+		case "3":
+			return 3;
+		case "4":
+			return 4;
+		case "5":
+			return 5;
+		case "6":
+			return 6;
+		case "7":
+			return 7;
+		case "8":
+			return 8;
+		case "9":
+			return 9;
+		case "10":
+			return 10;
+		case "J":
+			return 11;
+		case "Q":
+			return 12;
+		case "K":
+			return 13;
+		case "A":
+			return 14;
+		default:
+			return 0;
+		}
+	}
+
+	/**
+	 * 判断是4条胜利者 Four of a Kind
+	 */
+	private int SiTiaoWinner() {
+		tempCards tempCards = new tempCards();
+		ArrayList<String> tempArrayList = new ArrayList<String>();
+		for (int i = 0; i < allCards.size(); i++) {
+			if (!"".equals(isSiTiao(allCards.get(i)))) {
+
+				tempCards.allCards.add(allCards.get(i));
+				tempCards.playersIndex.add(i);
+				tempArrayList.add(isSiTiao(allCards.get(i)));
+			}
+		}
+		if (tempCards.allCards.size() == 0) {
+			return -1;
+		} else if (tempCards.allCards.size() == 1) {
+			return tempCards.playersIndex.get(0);
+		} else {
+			// 有两个或多个四条
+			int MANVAL = 0;
+			int playerIndex = 0;
+			for (int i = 0; i < tempArrayList.size(); i++) {
+				if (changeCardName(tempArrayList.get(i)) > MANVAL) {
+					MANVAL = changeCardName(tempArrayList.get(i));
+					playerIndex = tempCards.playersIndex.get(i);
+				}
+			}
+			return playerIndex;
+		}
+
+	}
+
+	/**
+	 * 判断是否为4条 Four of a Kind
+	 */
+	private String isSiTiao(List<Card> cards) {
+		if (cards.size() < 4) {
+			return "";
+		}
+		if (cards.size() == 4) {
+			String nameString = cards.get(0).getName();
+			for (int i = 1; i < cards.size(); i++) {
+				if (!nameString.equals(cards.get(i).getName())) {
+					return "";
+				}
+			}
+			return nameString;
+		}
+		if (cards.size() == 5) {
+			String nameString1 = cards.get(0).getName();
+			int nameString1amount = 1;
+			String nameString2 = cards.get(1).getName();
+			int nameString2amount = 1;
+
+			for (int i = 2; i < cards.size(); i++) {
+				if (nameString1.equals(cards.get(i).getName())) {
+					nameString1amount++;
+				} else if (nameString2.equals(cards.get(i).getName())) {
+					nameString2amount++;
+				}
+			}
+			if (nameString1amount == 4) {
+				return nameString1;
+			} else if (nameString2amount == 4) {
+				return nameString2;
+			}
+		}
+		return "";
+	}
+
+	/**
+	 * 判断是否为满堂红，如果是则返回牌面，否者为""
+	 */
+	public String isManTangHong(List<Card> cards) {
+		if (cards.size() != 5) {
+			return "";
+		}
+		ArrayList<rechecking> tempArrayList = rechecking(cards);
+		if (tempArrayList.size() != 2) {
+			return "";
+		}
+		if (tempArrayList.get(0).amount == 3) {
+			return tempArrayList.get(0).name;
+		}
+		if (tempArrayList.get(1).amount == 3) {
+			return tempArrayList.get(1).name;
+		}
+		return "";
+	}
+
+	/**
+	 * 满堂红赢家
+	 * 
+	 * @author ZHJI
+	 * 
+	 * 
+	 */
+	public int manTangHongWinner() {
+		tempCards tempCards = new tempCards();
+		ArrayList<String> tempArrayList = new ArrayList<String>();
+		for (int i = 0; i < allCards.size(); i++) {
+			if (!"".equals(isManTangHong(allCards.get(i)))) {
+				tempCards.allCards.add(allCards.get(i));
+				tempCards.playersIndex.add(i);
+				tempArrayList.add(isManTangHong(allCards.get(i)));
+			}
+		}
+		if (tempCards.allCards.size() == 0) {
+			return -1;
+		} else if (tempCards.allCards.size() == 1) {
+			return tempCards.playersIndex.get(0);
+		} else {
+			// 有两个或多个四条
+			int MANVAL = 0;
+			int playerIndex = 0;
+			for (int i = 0; i < tempArrayList.size(); i++) {
+				if (changeCardName(tempArrayList.get(i)) > MANVAL) {
+					MANVAL = changeCardName(tempArrayList.get(i));
+					playerIndex = tempCards.playersIndex.get(i);
+				}
+			}
+			return playerIndex;
+		}
+	}
+
+	/**
+	 * 统计各牌数量，返回牌数量
+	 */
+	public ArrayList<rechecking> rechecking(List<Card> cards) {
+		ArrayList<rechecking> returnArrayList = new ArrayList<rechecking>();
+		for (int i = 0; i < cards.size(); i++) {
+			String nameString = cards.get(i).getName();
+			boolean isSet = false;
+			for (int j = 0; j < returnArrayList.size(); j++) {
+				if (returnArrayList.get(j).name.equals(nameString)) {
+					returnArrayList.get(j).amount++;
+					isSet = true;
+				}
+			}
+			if (!isSet) {
+				returnArrayList.add(new rechecking(nameString));
+			}
+		}
+		return returnArrayList;
+
+	}
+
+	/**
+	 * 更具同花获取同花获胜者
+	 */
+	public int tongHuaWinner() {
+		tempCards tempCards = new tempCards();
+		for (int i = 0; i < allCards.size(); i++) {
+			if (isTongHua(allCards.get(i))) {
+				tempCards.allCards.add(allCards.get(i));
+				tempCards.playersIndex.add(i);
+			}
+		}
+		if (tempCards.allCards.size() == 0) {
+			return -1;
+		} else if (tempCards.allCards.size() == 1) {
+			return tempCards.playersIndex.get(0);
+		} else {
+			// 有两个或多个同花
+			int MANVAL = 0;
+			int playerIndex = 0;
+			for (int i = 0; i < tempCards.allCards.size(); i++) {
+				if (changeCardName(tempCards.allCards.get(i).get(tempCards.allCards.get(i).size() - 1).getName()) > MANVAL) {
+					MANVAL = changeCardName(tempCards.allCards.get(i).get(tempCards.allCards.get(i).size() - 1).getName());
+					playerIndex = tempCards.playersIndex.get(i);
+				}
+			}
+			return playerIndex;
+		}
+
+	}
+
+	/**
+	 * 判断是否顺子赢家
+	 */
+	public int isShunZiWinner() {
+		tempCards tempCards = new tempCards();
+		for (int i = 0; i < allCards.size(); i++) {
+			// System.out.println(isShunZi(allCards.get(i)));
+			if (isShunZi(allCards.get(i))) {
+				tempCards.allCards.add(allCards.get(i));
+				tempCards.playersIndex.add(i);
+			}
+		}
+		if (tempCards.allCards.size() == 0) {
+			return -1;
+		} else if (tempCards.allCards.size() == 1) {
+			return tempCards.playersIndex.get(0);
+		} else {
+			// 当有两个或两个以上顺子的情况
+			// 有两个或多个同花
+			int MANVAL = 0;
+			int playerIndex = 0;
+			for (int i = 0; i < tempCards.allCards.size(); i++) {
+				if (changeCardName(tempCards.allCards.get(i).get(tempCards.allCards.get(i).size() - 1).getName()) > MANVAL) {
+					MANVAL = changeCardName(tempCards.allCards.get(i).get(tempCards.allCards.get(i).size() - 1).getName());
+					playerIndex = tempCards.playersIndex.get(i);
+				}
+			}
+			return playerIndex;
+		}
+	}
+
+	/**
+	 * 打印allCardsList
+	 */
+	private void showAllCardsList() {
+		for (int i = 0; i < allCards.size(); i++) {
+			for (int j = 0; j < allCards.get(i).size(); j++) {
+				System.out.print(allCards.get(i).get(j).getName() + "  ");
+			}
+			System.out.println();
+		}
+
+	}
+
+	/**
+	 * 判断三条赢家
+	 * 
+	 * @return int player Index
+	 */
+	private int isSanTiaoWinner() {
+		// showAllCardsList();
+		int MAXVAL = 0;
+		int playerIndex = -1;
+		for (int i = 0; i < allCards.size(); i++) {
+			ArrayList<rechecking> rechecking = rechecking(allCards.get(i));
+			Collections.sort(rechecking);
+			if ((rechecking.size() > 3 || rechecking.size() == 0) || rechecking.get(0).amount != 3) {
+				continue;
+			}
+			if (changeCardName(rechecking.get(rechecking.size() - 1).name) > MAXVAL) {
+				MAXVAL = changeCardName(rechecking.get(rechecking.size() - 1).name);
+				playerIndex = i;
+			}
+		}
+		return playerIndex;
+	}
+
+	/**
+	 * 判断两对赢家
+	 * 
+	 * @author ZHJI
+	 * 
+	 */
+	public int isLiangDuiWinner() {
+		int MAXVALOne = 0;
+		int MAXVALTwo = 0;
+		int MAXVALThree = 0;
+		int playerIndex = -1;
+		for (int i = 0; i < allCards.size(); i++) {
+			ArrayList<rechecking> rechecking = rechecking(allCards.get(i));
+			if (rechecking.size() != 3) {
+				continue;
+			}
+			Collections.sort(rechecking);
+			if (changeCardName(rechecking.get(rechecking.size() - 1).name) < MAXVALOne) {
+				continue;
+			} else if (changeCardName(rechecking.get(rechecking.size() - 1).name) > MAXVALOne) {
+				MAXVALOne = changeCardName(rechecking.get(rechecking.size() - 1).name);
+				MAXVALTwo = changeCardName(rechecking.get(rechecking.size() - 2).name);
+				MAXVALThree = changeCardName(rechecking.get(rechecking.size() - 3).name);
+				playerIndex = i;
+			} else {
+				// 最大对子相等
+				if (changeCardName(rechecking.get(rechecking.size() - 2).name) < MAXVALTwo) {
+					continue;
+				} else if (changeCardName(rechecking.get(rechecking.size() - 2).name) > MAXVALTwo) {
+					MAXVALOne = changeCardName(rechecking.get(rechecking.size() - 1).name);
+					MAXVALTwo = changeCardName(rechecking.get(rechecking.size() - 2).name);
+					MAXVALThree = changeCardName(rechecking.get(rechecking.size() - 3).name);
+					playerIndex = i;
+				} else {
+					// 第二个对子相等
+					if (changeCardName(rechecking.get(rechecking.size() - 3).name) > MAXVALThree) {
+						MAXVALOne = changeCardName(rechecking.get(rechecking.size() - 1).name);
+						MAXVALTwo = changeCardName(rechecking.get(rechecking.size() - 2).name);
+						MAXVALThree = changeCardName(rechecking.get(rechecking.size() - 3).name);
+						playerIndex = i;
+					}
+				}
+			}
+		}
+		return playerIndex;
+
+	}
+
+	/**
+	 * isYiDuiWinner 一对赢家
+	 */
+	public int isYiDuiWinner() {
+		int MAXVALOne = 0;
+		int MAXVALThree = 0;
+		int playerIndex = -1;
+		for (int i = 0; i < allCards.size(); i++) {
+			ArrayList<rechecking> rechecking = rechecking(allCards.get(i));
+			if (rechecking.size() != 4) {
+				continue;
+			}
+			Collections.sort(rechecking);
+
+			if (changeCardName(rechecking.get(rechecking.size() - 1).name) < MAXVALOne) {
+				continue;
+			} else if (changeCardName(rechecking.get(rechecking.size() - 1).name) > MAXVALOne) {
+				MAXVALOne = changeCardName(rechecking.get(rechecking.size() - 1).name);
+				MAXVALThree = changeCardName(rechecking.get(rechecking.size() - 2).name);
+				playerIndex = i;
+			} else {
+				if (changeCardName(rechecking.get(rechecking.size() - 2).name) > MAXVALThree) {
+					MAXVALOne = changeCardName(rechecking.get(rechecking.size() - 1).name);
+					MAXVALThree = changeCardName(rechecking.get(rechecking.size() - 2).name);
+					playerIndex = i;
+				}
+
+			}
+		}
+		return playerIndex;
+	}
+
+	/**
+	 * 单张赢家
+	 * 
+	 * @author ZHJI
+	 * 
+	 */
+	public int danZhangWinner() {
+		int MAXVALThree = 0;
+		int playerIndex = -1;
+		for (int i = 0; i < allCards.size(); i++) {
+			int temp = FindMaxValue(allCards.get(i));
+			if (allCards.get(i).get(temp).getValue() > MAXVALThree) {
+				MAXVALThree = allCards.get(i).get(temp).getValue();
+				playerIndex = i;
+			}
+		}
+		return playerIndex;
+	}
+
+	public int FindMaxValue(List<Card> aaa) {
+		int maxIndex = 0;
+		int manVal = 0;
+		for (int i = 0; i < aaa.size(); i++) {
+			if (aaa.get(i).getValue() > manVal) {
+				manVal = aaa.get(i).getValue();
+				maxIndex = i;
+			}
+		}
+		return maxIndex;
+
+	}
+
+	class rechecking implements java.lang.Comparable<rechecking> {
+		String name;
+		int amount = 1;
+
+		rechecking(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public int compareTo(rechecking o) {
+			if (this.amount > o.amount) {
+				return 1;
+			} else if (this.amount < o.amount) {
+				return -1;
+			} else {
+				if (changeCardName(this.name) > changeCardName(o.name)) {
+					return 1;
+				} else {
+					return -1;
+				}
+			}
+		}
+	}
+
+}

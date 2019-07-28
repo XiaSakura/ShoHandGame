@@ -1,0 +1,97 @@
+package com.poker.service;
+
+import java.io.DataInputStream;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.poker.client.ClientMain;
+import com.poker.domain.Card;
+import com.poker.domain.Message;
+import com.poker.domain.Player;
+
+/**
+ * @author q9826
+ * 
+ */
+public class ReadMes extends Thread {
+	private Socket socket;
+
+	public ReadMes(Socket socket) {
+		this.socket = socket;
+	}
+
+	public void run() {
+		DataInputStream objInput = null;
+		try {
+			objInput = new DataInputStream(socket.getInputStream());
+			while (true) {
+				String serverInputStr = (String) objInput.readUTF();
+				serverInputStr = serverInputStr.replace("\\","");
+				System.out.println(serverInputStr);
+				if (serverInputStr != null && serverInputStr.length() > 0) {
+					JSONObject jsonObject = JSONObject.parseObject(serverInputStr);
+					if (jsonObject != null) {
+						// 解析 jsonObject
+						readMes(jsonObject);
+					}
+				}
+
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	/**
+	 * 根据jsonObject 进行解析
+	 */
+	public void readMes(JSONObject jsonObject) {
+		int status_code = jsonObject.getIntValue("status_code");
+		List<Player> players = new ArrayList<Player>();// 游戏开始获取的玩家
+
+//		if (array!=null&&array.size()>0) {
+//			for (int j = 0; j < array.size(); j++) {
+//				JSONObject jsonObject1 = (JSONObject) array.get(j);
+//				int id = jsonObject1.getInteger("id");
+//				String name = jsonObject1.getString("name");
+//				int color = jsonObject1.getInteger("color");
+//				boolean out = jsonObject1.getBoolean("out");
+//				Card p = new Card(color, id, name, out);
+//				players.add(p);
+//			}
+//		}
+
+		System.out.println(status_code);
+		switch (status_code) {
+		case 201:
+			System.out.println("开房成功");
+			break;
+		case 102:// 当客户端有两个人进行连接时
+			System.out.println("两个人已经准备好");
+//			JSONArray array = jsonObject.getJSONArray("players");
+			
+			
+			// 打开两人场子 初始化玩家 (这里可以 设置当第一个人 点击开始 才可以开始
+			// 还需要再请求一次
+			// )
+			// 这里先简单点 直接当打开 当有两个socket的时候
+			//
+			// jsonObject.getJSONArray("") 获得玩家对象 ,玩家手里面的牌
+			/*
+			 * if (players.get(i).getName().equals(Fuckland.jTextField.getText().trim())) {
+			 * MainFrame.startMain(players, i); // 根据玩家输入的姓名 打开不同的窗口 这样就区别了玩家
+			 * Fuckland.fuckland.dispose(); break; }
+			 */
+
+		default:
+			break;
+		}
+	}
+
+}

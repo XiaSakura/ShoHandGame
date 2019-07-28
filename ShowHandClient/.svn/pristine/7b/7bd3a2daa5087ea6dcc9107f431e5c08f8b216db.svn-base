@@ -1,0 +1,59 @@
+package com.poker.service;
+
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.List;
+
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+
+import com.alibaba.fastjson.JSON;
+import com.poker.domain.Message;
+import com.poker.view.MainFrame;
+
+import sun.applet.Main;
+
+public class ShowMouseEvent implements MouseListener {
+
+	private JLabel show;
+
+	public ShowMouseEvent(JLabel show) {
+		this.show = show;
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		show.setIcon(new ImageIcon(MainFrame.class.getClassLoader().getResource("image/tanpai1.jpg")));
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		show.setIcon(new ImageIcon(MainFrame.class.getClassLoader().getResource("image/tanpai2.jpg")));
+	}
+
+	/*
+	 * 当玩家点击摊牌的时候 显示所有人的牌 并请求服务器统计胜利
+	 */
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		// 给指定玩家id发牌
+		// 不能连续点击
+		CanShowPoker.setCannotShow(MainFrame.showPoker);
+		int current_player_id = MainFrame.current_player_id;
+		
+		
+		Message message = new Message();
+		message.setStatus_code(203); // 203代表请求服务器发牌
+		message.setCurrent_player_id(current_player_id);
+		Connect.sendMes.msg.add(JSON.toJSONString(message));
+	}
+
+}

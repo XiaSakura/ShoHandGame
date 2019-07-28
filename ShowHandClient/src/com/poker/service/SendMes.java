@@ -1,0 +1,44 @@
+package com.poker.service;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
+public class SendMes extends Thread {
+	private Socket socket;
+	private Connect connect;
+	public BlockingQueue<String> msg = new ArrayBlockingQueue<String>(10);
+
+	public SendMes(Socket socket, Connect connect) {
+		this.socket = socket;
+		this.connect = connect;
+	}
+
+	public void run() {
+		DataOutputStream objOut = null;
+		try {
+			objOut = new DataOutputStream(socket.getOutputStream());
+			while (true) {
+				if (msg != null && msg.size() > 0) {
+					objOut.writeUTF(msg.take());
+				}
+				Thread.sleep(100);
+			}
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null,
+					new JLabel("<html><h1><font color='red'>" + e.getMessage() + "</font></h1></html>"), "错误",
+					JOptionPane.ERROR_MESSAGE);
+		} finally {
+			try {
+				objOut.close();
+			} catch (IOException e) {
+			}
+		}
+	}
+
+}

@@ -1,0 +1,61 @@
+package com.poker.service;
+
+import java.io.DataInputStream;
+import java.net.Socket;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.poker.client.ClientMain;
+import com.poker.domain.Message;
+
+/**
+ * @author q9826
+ * 
+ */
+public class ReadMes extends Thread {
+	private Socket socket;
+
+	public ReadMes(Socket socket) {
+		this.socket = socket;
+	}
+
+	public void run() {
+		DataInputStream objInput = null;
+		try {
+			objInput = new DataInputStream(socket.getInputStream());
+			while (true) {
+				String serverInputStr = (String) objInput.readUTF();
+				System.out.println(serverInputStr);
+				if (serverInputStr != null && serverInputStr.length() > 0) {
+					JSONObject jsonObject = JSONObject.parseObject(serverInputStr);
+					if (jsonObject != null) {
+						// 解析 jsonObject
+						readMes(jsonObject);
+					}
+				}
+
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	/**
+	 * 根据jsonObject 进行解析
+	 */
+	public void readMes(JSONObject jsonObject) {
+		int status_code = jsonObject.getIntValue("status_code");
+		System.out.println(status_code);
+		switch (status_code) {
+		case 201:
+			System.out.println("开房成功");
+			break;
+
+		default:
+			break;
+		}
+	}
+
+}

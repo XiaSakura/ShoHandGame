@@ -1,0 +1,77 @@
+package com.poker.service;
+
+import java.io.DataInputStream;
+import java.net.Socket;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.poker.domain.Message;
+import com.poker.domain.Player;
+import com.poker.server.ServerMain;
+
+/**
+ * @author q9826
+ * 
+ */
+public class ReadMes extends Thread {
+	private Socket socket;
+
+	public ReadMes(Socket socket) {
+		this.socket = socket;
+	}
+
+	public void run() {
+		DataInputStream objInput = null;
+		try {
+			objInput = new DataInputStream(socket.getInputStream());
+			while (true) {
+				String clientInputStr = (String) objInput.readUTF();
+				if (clientInputStr != null && clientInputStr.length() > 0) {
+					JSONObject jsonObject = JSONObject.parseObject(clientInputStr);
+					if (jsonObject != null) {
+						// 解析 jsonObject
+						readMes(jsonObject);
+					}
+				}
+
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+
+	}
+
+	/**
+	 * 根据jsonObject 进行解析
+	 */
+	public void readMes(JSONObject jsonObject) {
+		int status_code = jsonObject.getIntValue("status_code");
+		switch (status_code) {
+		case 200:
+			System.out.println("200");
+			// 发送消息给客户端成功
+			// 进行相应的操作
+			if (ServerMain.players.size() == 2) {
+				Message message = new Message();
+				message.setStatus_code(102); // 102代表开房成功
+				message.setPlayers(ServerMain.players);
+				System.out.println("已经满足两人开始游戏");
+
+				JSONObject object = new JSONObject();
+				object.put("status_code", message.getStatus_code());
+				object.put("players", JSON.toJSONString(ServerMain.players));
+				System.out.println(object);
+				Dealer.sendMes.msg.add(JSON.toJSONString(object));
+			}
+
+			break;
+		case 201:
+
+		default:
+			break;
+		}
+	}
+
+}

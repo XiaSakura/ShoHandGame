@@ -1,0 +1,42 @@
+package com.poker.service;
+
+import javax.swing.JLabel;
+
+import com.poker.view.MainFrame;
+
+/**
+ * @author q9826 判断能否摊牌
+ */
+public class CanShowPoker {
+
+	private static ShowMouseEvent showMouseEvent = new ShowMouseEvent(MainFrame.showPoker);
+
+	/**
+	 * 设置能够摊牌
+	 * 
+	 * @param out
+	 * @param choose
+	 * @param pass
+	 */
+	public static void setCanShow(JLabel show) {
+		// 现移除所有监听器
+		MainFrame.showPoker.removeMouseListener(showMouseEvent);
+		// 添加监听器
+		show.addMouseListener(showMouseEvent);
+		show.setEnabled(true);
+	}
+
+	/**
+	 * 设置不能摊牌
+	 * 
+	 * @param out
+	 * @param pass
+	 */
+	public static void setCannotShow(JLabel show) {
+		// 现移除所有监听器
+		MainFrame.showPoker.removeMouseListener(showMouseEvent);
+		show.addMouseListener(null);
+		show.setEnabled(false);
+	}
+
+}

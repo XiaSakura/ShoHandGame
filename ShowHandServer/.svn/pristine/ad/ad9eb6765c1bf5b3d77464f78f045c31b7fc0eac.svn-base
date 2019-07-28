@@ -1,0 +1,29 @@
+package com.poker.service;
+
+import java.net.Socket;
+
+import com.poker.domain.Player;
+import com.poker.server.ServerMain;
+
+/**
+ * @author q9826 每一位玩家都有一个荷官 荷官具体分析玩家的牌和要做什么 荷官类 实现了 两个线程 专门用来接收和发送给客户端数据
+ */
+public class Dealer {
+	public static SendMes sendMes;
+	public static ReadMes readMes;
+
+	public Dealer(Socket client) {
+		// 每一个荷官对应一个 玩家
+		Player player = new Player();
+		player.setSocket(client);
+		ServerMain.players.add(player);
+		//构造方法里面 已经start了
+		sendMes = new SendMes(client);
+		sendMes.start();
+		readMes = new ReadMes(client);
+		readMes.start();
+		
+		
+	}
+
+}
